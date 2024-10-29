@@ -40,7 +40,6 @@ impl Vertex {
 
 #[rustfmt::skip]
 const VERTICES: &[Vertex] = &[
-    // Changed
     Vertex { position: [-0.0868241, 0.49240386, 0.0], tex_coords: [0.4131759, 0.00759614], }, // A
     Vertex { position: [-0.49513406, 0.06958647, 0.0], tex_coords: [0.0048659444, 0.43041354], }, // B
     Vertex { position: [-0.21918549, -0.44939706, 0.0], tex_coords: [0.28081453, 0.949397], }, // C
@@ -180,11 +179,11 @@ impl CameraController {
             // Rescale the distance between the target and the eye so
             // that it doesn't change. The eye, therefore, still
             // lies on the circle made by the target and eye.
-            camera.eye = camera.target - (forward + right * self.speed).normalize();
+            camera.eye = camera.target - (forward + right * self.speed).normalize() * forward_mag;
         }
 
         if self.is_left_pressed {
-            camera.eye = camera.target - (forward - right * self.speed).normalize();
+            camera.eye = camera.target - (forward - right * self.speed).normalize() * forward_mag;
         }
     }
 }
@@ -332,7 +331,7 @@ impl<'a> State<'a> {
 
         let mut camera_uniform = CameraUniform::new();
         camera_uniform.update_view_proj(&camera);
-        let camera_controller = CameraController::new(0.2);
+        let camera_controller = CameraController::new(0.01);
 
         let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Camera Buffer"),
@@ -402,7 +401,7 @@ impl<'a> State<'a> {
                 topology: wgpu::PrimitiveTopology::TriangleList,
                 strip_index_format: None,
                 front_face: wgpu::FrontFace::Ccw,
-                cull_mode: Some(wgpu::Face::Back),
+                cull_mode: None,
                 // Setting this to anything other than Fill requires Features::POLYGON_MODE_LINE
                 // or Features::POLYGON_MODE_POINT
                 polygon_mode: wgpu::PolygonMode::Fill,
